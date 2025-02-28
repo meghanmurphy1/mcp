@@ -60,6 +60,40 @@ def search_index(index_name: str, query: str) -> dict[str, any]:
         return results
     except Exception as e:
         return {"error": f"Search failed: {str(e)}"}
+    
+@mcp.tool()
+def semantic_search(index_name: str, field:str, query: str) -> dict[str, any]:
+    try:
+        if isinstance(query, str):
+            query_body = {
+                "query": {
+                    "semantic": {
+                        "field": field,
+                        "query": query
+                        }
+                }
+            }
+        else:
+            query_body = query
+        results = es_client.search(index=index_name, body=query_body)
+        return results
+    except Exception as e:
+        return {"error": f"Semantic Search failed: {str(e)}"}
+
+
+@mcp.prompt()
+def is_elasticsearch_configured() -> list[Message]:
+    try:
+        status = es_client.health_report()['status']
+        return [
+            UserMessage(content="Can you reach my Elasticsearch instance?"),
+            AssistantMessage(content=f"Let me try connecting to your Elasticsearch instance... Connected! Status: {status}")
+        ]
+    except Exception as e:
+        return [
+            UserMessage(content="Can you reach my Elasticsearch instance?"),
+            AssistantMessage(content=f"I tried connecting to your Elasticsearch instance, but encountered an error: {str(e)}")
+        ]
 
 @mcp.prompt()
 def analyze_salesforce_data(index: str) -> list[Message]:
@@ -70,4 +104,5 @@ def analyze_salesforce_data(index: str) -> list[Message]:
     ]
 
 if __name__ == "__main__":
+    print(f"MCP server '{mcp.name}' is running...")
     mcp.run()
