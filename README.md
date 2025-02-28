@@ -2,5 +2,9 @@
 Python implementation of an Elasticsearch MCP server
 
 # Quick Start
-	make install 
+Make sure you have Claude desktop installed and an instance of Elasticsearch running, and configure the `.env` appropriately. 
+
+Run: 
+	
+ 	make install 
 	make run 
