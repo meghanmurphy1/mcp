@@ -1,13 +1,19 @@
+import os
 from fastmcp import FastMCP
 from fastmcp.prompts.base import UserMessage, AssistantMessage
 from typing import Union
+from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
 
+load_dotenv()
+
 mcp = FastMCP("ES MCP Server")
+api_key = os.getenv("API_KEY")
+api_url = os.getenv("API_URL")
 
 es_client = Elasticsearch(
-            API_URL,
-            api_key=API_KEY,
+            api_url,
+            api_key=api_key,
         )
 Message = Union[UserMessage, AssistantMessage]
 
