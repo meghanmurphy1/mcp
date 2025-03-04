@@ -6,5 +6,5 @@ Make sure you have Claude desktop installed and an instance of Elasticsearch run
 
 Run: 
 	
- 	make install 
+ 	make add-claude-config
 	make run 
