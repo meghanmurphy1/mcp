@@ -32,11 +32,14 @@ def fetch_index_details(index: str) -> dict[str, any]:
     return es_client.get_index_details(index)
 
 
-@mcp.resource(
-    uri="docs://search/{query}",
-    name="Elasticsearch Documentation",
-    description="Perform a semantic search across Elastic documentation for a given query.",
-)
+# ------------------- MCP Tools (Actions Users Can Trigger) -------------------
+
+
+#  IMO the search tools (semantic search) should be actually resources
+# 
+# TODO: define actual tools
+
+@mcp.tool()
 def search_elastic_documentation(query: str) -> dict[str, any]:
     """
     Perform a semantic search across Elastic documentation for a given query. The
@@ -44,14 +47,6 @@ def search_elastic_documentation(query: str) -> dict[str, any]:
     You will get titles and links to the documentation pages that might be helpful for user to understand the concepts.
     """
     return es_client.search_crawler_resource("search-elastic-docs", query)
-
-
-# ------------------- MCP Tools (Actions Users Can Trigger) -------------------
-
-
-#  IMO the search tools (semantic search) should be actually resources
-# 
-# TODO: define actual tools
 
 @mcp.tool()
 def search_elastic_search_labs_blogs(query: str) -> dict[str, any]:
