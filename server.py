@@ -13,7 +13,7 @@ Message = Union[UserMessage, AssistantMessage]
 
 
 @mcp.resource(
-    "elasticsearch://indices",
+    uri="elasticsearch://indices",
     name="Elasticsearch Indices",
     description="Retrieve all Elasticsearch indices.",
 )
@@ -23,7 +23,7 @@ def fetch_indices() -> list[dict]:
 
 
 @mcp.resource(
-    "elasticsearch://indices/{index}",
+    uri="elasticsearch://indices/{index}",
     name="Index Details",
     description="Retrieve details of a specific Elasticsearch index.",
 )
@@ -32,11 +32,14 @@ def fetch_index_details(index: str) -> dict[str, any]:
     return es_client.get_index_details(index)
 
 
-@mcp.resource(
-    "docs://search/{query}",
-    name="Elasticsearch Documentation",
-    description="Perform a semantic search across Elastic documentation for a given query.",
-)
+# ------------------- MCP Tools (Actions Users Can Trigger) -------------------
+
+
+#  IMO the search tools (semantic search) should be actually resources
+# 
+# TODO: define actual tools
+
+@mcp.tool()
 def search_elastic_documentation(query: str) -> dict[str, any]:
     """
     Perform a semantic search across Elastic documentation for a given query. The
@@ -45,12 +48,7 @@ def search_elastic_documentation(query: str) -> dict[str, any]:
     """
     return es_client.search_crawler_resource("search-elastic-docs", query)
 
-
-@mcp.resource(
-    "search_labs://search/{query}",
-    name="Elasticsearch Labs Blogs",
-    description="Perform a semantic search across Elastic search labs blogs for a given query.",
-)
+@mcp.tool()
 def search_elastic_search_labs_blogs(query: str) -> dict[str, any]:
     """
     Perform a semantic search across Elastic search labs blogs for a given query. The
@@ -59,12 +57,6 @@ def search_elastic_search_labs_blogs(query: str) -> dict[str, any]:
     """
     return es_client.search_crawler_resource("search-blog-search-labs", query)
 
-
-# ------------------- MCP Tools (Actions Users Can Trigger) -------------------
-
-
-#  IMO the search tools (semantic search) should be actually resources
-# TODO: define actual tools
 
 # ------------------- MCP Prompts (Predefined Interactions with the Assistant) -------------------
 
@@ -114,17 +106,36 @@ def analyze_salesforce_data(index: str) -> list[Message]:
 
 # ------------------- DEBUG: Print Registered Resources -------------------
 
-
 def debug_registered_resources():
     """Print all registered MCP resources for debugging."""
     print("\n🔍 Registered MCP Resources:")
     for resource in mcp._resource_manager.list_resources():
-        print(f" - {resource}")
+        print(f" - {resource.name}")
+    for resource in mcp._resource_manager.list_templates():
+        print(f" - {resource.name}")
+
+# ------------------- DEBUG: Print Registered Tools -------------------
+
+def debug_registered_tools():
+    """Print all registered MCP tools for debugging."""
+    print("\n🔍 Registered MCP Tools:")
+    for tool in mcp._tool_manager.list_tools():
+        print(f" - {tool.name}")
+
+# ------------------- DEBUG: Print Registered Prompts -------------------
+
+def debug_registered_prompts():
+    """Print all registered MCP prompts for debugging."""
+    print("\n🔍 Registered MCP Prompts:")
+    for prompt in mcp._prompt_manager.list_prompts():
+        print(f" - {prompt.name}")
 
 
 # ------------------- MCP Server Execution -------------------
 
 if __name__ == "__main__":
     debug_registered_resources()
-    print(f"MCP server '{mcp.name}' is running...")
+    debug_registered_prompts()
+    debug_registered_tools()
+    print(f"\n MCP server '{mcp.name}' is running...")
     mcp.run()
