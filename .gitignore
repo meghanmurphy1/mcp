@@ -1,2 +1,3 @@
 .env
-mcp/__pycache__
+.venv
+__pycache__
