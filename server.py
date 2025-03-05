@@ -1,6 +1,7 @@
-from fastmcp import FastMCP
-from fastmcp.prompts.base import UserMessage, AssistantMessage
+from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp.prompts.base import UserMessage, AssistantMessage
 from typing import Union
+from utils import format_search_response
 import es_client
 
 # Initialize FastMCP server for Elasticsearch interactions
@@ -14,7 +15,7 @@ Message = Union[UserMessage, AssistantMessage]
 
 @mcp.resource(
     "elasticsearch://indices",
-    name="Elasticsearch Indices",
+    name="list_elasticsearch_indices",
     description="Retrieve all Elasticsearch indices.",
 )
 def fetch_indices() -> list[dict]:
@@ -24,7 +25,7 @@ def fetch_indices() -> list[dict]:
 
 @mcp.resource(
     "elasticsearch://indices/{index}",
-    name="Index Details",
+    name="index_details",
     description="Retrieve details of a specific Elasticsearch index.",
 )
 def fetch_index_details(index: str) -> dict[str, any]:
@@ -34,7 +35,7 @@ def fetch_index_details(index: str) -> dict[str, any]:
 
 @mcp.resource(
     "docs://search/{query}",
-    name="Elasticsearch Documentation",
+    name="elasticsearch_documentation",
     description="Perform a semantic search across Elastic documentation for a given query.",
 )
 def search_elastic_documentation(query: str) -> dict[str, any]:
@@ -48,7 +49,7 @@ def search_elastic_documentation(query: str) -> dict[str, any]:
 
 @mcp.resource(
     "search_labs://search/{query}",
-    name="Elasticsearch Labs Blogs",
+    name="elasticsearch_labs_blogs",
     description="Perform a semantic search across Elastic search labs blogs for a given query.",
 )
 def search_elastic_search_labs_blogs(query: str) -> dict[str, any]:
@@ -63,8 +64,35 @@ def search_elastic_search_labs_blogs(query: str) -> dict[str, any]:
 # ------------------- MCP Tools (Actions Users Can Trigger) -------------------
 
 
-#  IMO the search tools (semantic search) should be actually resources
-# TODO: define actual tools
+@mcp.tool(
+    name="search_elasticsearch_documentation",
+    description="Perform a semantic search across Elastic documentation for a given query.",
+)
+def search_elastic_documentation(query: str) -> str:
+    """
+    Perform a semantic search across Elastic documentation for a given query. The
+    data is using sparse embeddings for semantic search so optimzie the query for it.
+    You will get titles and links to the documentation pages that might be helpful for user to understand the concepts.
+    """
+    return format_search_response(
+        es_client.search_crawler_resource("search-elastic-docs", query)
+    )
+
+
+@mcp.tool(
+    name="search_elasticsearch_labs_blogs",
+    description="Perform a semantic search across Elastic search labs blogs for a given query.",
+)
+def search_elastic_search_labs_blogs(query: str) -> str:
+    """
+    Perform a semantic search across Elastic search labs blogs for a given query. The
+    data is using sparse embeddings for semantic search so optimzie the query for it.
+    You will get titles and links to the blog pages that might be helpful for user to understand the concepts.
+    """
+    return format_search_response(
+        es_client.search_crawler_resource("search-blog-search-labs", query)
+    )
+
 
 # ------------------- MCP Prompts (Predefined Interactions with the Assistant) -------------------
 
@@ -112,19 +140,8 @@ def analyze_salesforce_data(index: str) -> list[Message]:
     ]
 
 
-# ------------------- DEBUG: Print Registered Resources -------------------
-
-
-def debug_registered_resources():
-    """Print all registered MCP resources for debugging."""
-    print("\n🔍 Registered MCP Resources:")
-    for resource in mcp._resource_manager.list_resources():
-        print(f" - {resource}")
-
-
 # ------------------- MCP Server Execution -------------------
 
 if __name__ == "__main__":
-    debug_registered_resources()
     print(f"MCP server '{mcp.name}' is running...")
     mcp.run()
